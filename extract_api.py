@@ -2,9 +2,11 @@ import os
 import requests
 import logging
 import json
+import time
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 
+# Create directories if necessary 
 logs_dir = 'logs'
 if os.path.exists(logs_dir):
     pass
@@ -29,7 +31,7 @@ logging.basicConfig(
 
 logger = logging.getLogger()
 
-
+# Load .env
 load_dotenv()
 
 AMPLITUDE_API_KEY = os.getenv("AMP_API_KEY")
@@ -37,6 +39,8 @@ AMPLITUDE_SECRET_KEY = os.getenv("AMP_SECRET_KEY")
 logger.info("AMP Environment Variables Read")
 
 # error if can't find api keys
+
+# Build url and create parameters for API
 
 url = 'https://analytics.eu.amplitude.com/api/2/export'
 
@@ -51,21 +55,38 @@ params= {
         }
 logger.info("API URL/Parameters Set")
 
+# Request API
+
 response = requests.get(url, params=params, auth=(AMPLITUDE_API_KEY, AMPLITUDE_SECRET_KEY))
-logger.info(f"API Call Response Code: '{response.status_code}'")
+response_code = response.status_code
+logger.info(f"API Call Response Code: '{response_code}'")
 
-if response.status_code == 200:
-    data = response.content 
-    logger.info("Data retrieved successfully.")
-    logger.info("Saving data to data.zip")
-    with open(filepath, 'wb') as file:
-        file.write(data)
-    logger.info("Data saved to data.zip")
-else:
-    logger.error(f"API Call Error '{response.status_code}: {response.text}'")
-    print(f'Error {response.status_code}: {response.text}')
+count = 0
+number_of_tries = 3
 
-logger.info("Process Finished")
+while count < number_of_tries:
+
+    # If successful?
+
+    if response_code == 200:
+        data = response.content 
+        logger.info("Data retrieved successfully.")
+        logger.info("Saving data to data.zip")
+        with open(filepath, 'wb') as file:
+            file.write(data)
+        logger.info(f"Data saved to {filepath}")
+
+    # If not sucessful?
+    elif response_code>499 or response_code<200:
+            #retry
+            time.sleep(10)
+            count+=1
+    else:
+        logger.error(f"API Call Error '{response_code}: {response.text}'")
+        print(f'Error {response_code}: {response.text}')
+        break
+
+    logger.info("Process Finished")
 
 
 
