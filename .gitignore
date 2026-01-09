@@ -209,3 +209,5 @@ __marimo__/
 logs
 *.json
 data
+unzip_data
+unzip_logs

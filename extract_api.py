@@ -1,7 +1,6 @@
 import os
 import requests
 import logging
-import json
 import time
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
@@ -71,7 +70,7 @@ while count < number_of_tries:
     if response_code == 200:
         data = response.content 
         logger.info("Data retrieved successfully.")
-        logger.info("Saving data to data.zip")
+        logger.info(f"Saving data to {filepath}")
         with open(filepath, 'wb') as file:
             file.write(data)
         logger.info(f"Data saved to {filepath}")
@@ -79,7 +78,7 @@ while count < number_of_tries:
 
     # If not sucessful?
     elif response_code>499 or response_code<200:
-            #retry
+            # wait and retry
             time.sleep(10)
             count+=1
     else:
