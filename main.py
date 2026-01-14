@@ -31,7 +31,7 @@ params= {
 
 extract_logger = logging_function('extract',timestamp)
 
-extract_function(url,3, extract_logger, timestamp)
+extract_function(url, 3, params, AMP_API_KEY, AMP_SECRET_KEY, extract_logger)
 
 load_logger = logging_function('load',timestamp)
 

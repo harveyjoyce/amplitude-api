@@ -2,7 +2,7 @@ import requests
 import time
 import os
 
-def extract_function(url, number_of_tries, params, AMP_API_KEY, AMP_SECRET_KEY, logger, timestamp):
+def extract_function(url, number_of_tries, params, AMP_API_KEY, AMP_SECRET_KEY, logger):
     '''
     Docstring for extract_function
     
@@ -12,7 +12,6 @@ def extract_function(url, number_of_tries, params, AMP_API_KEY, AMP_SECRET_KEY, 
     :param AMP_API_KEY: Description
     :param AMP_SECRET_KEY: Description
     :param logger: Description
-    :param timestamp: Description
     '''
     count = 0
 
@@ -21,23 +20,25 @@ def extract_function(url, number_of_tries, params, AMP_API_KEY, AMP_SECRET_KEY, 
         response = requests.get(url, params=params, auth=(AMP_API_KEY, AMP_SECRET_KEY))
         response_code = response.status_code
 
+        filename = 'amp_events.zip'
+
         dir = 'data'
         if os.path.exists(dir):
             pass
         else:
             os.mkdir(dir)
 
-        filepath = f'{dir}/{filename}.zip'
+        filepath = f'{dir}/{filename}'
 
         # If successful?
 
         if response_code == 200:
             data = response.content # because it .zips
             logger.info("Data retrieved successfully.")
-            logger.info(f"Saving data to amp_events.zip")
-            with open(f"data/amp_events.zip", 'wb') as file:
+            logger.info(f"Saving data to {filename}")
+            with open(filepath, 'wb') as file:
                 file.write(data)
-            logger.info(f"Data saved to amp_events.zip")
+            logger.info(f"Data saved to {filename}")
             break
 
         # If not sucessful?
