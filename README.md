@@ -4,7 +4,7 @@
 
 This project: 
 - Retrieves website traffic data from the **[Amplitude Export API](https://amplitude.com/docs/apis/analytics/export)**
-- Logs execution details, unzips the .zip and .gzip files, then stores the downloaded data locally as timestamped JSON files
+- Logs execution details, unzips the `.zip` and `.gz` files, then stores the downloaded data locally as timestamped JSON files
 - Uploads them to an S3 bucket in **AWS** which connects to **Snowflake**
 - **dbt** is used to parse out the raw JSON and create a view 
 
@@ -64,7 +64,7 @@ AWS_REGION = ' '
 ├── json_data/
 │   └── YYYY-MM-DD HH-MM-SS.json
 ├── logs/
-│   └── YYYY-MM-DD HH-MM-SS.log
+│   └── logs_YYYY-MM-DD HH-MM-SS.log
 ├── main.py
 ├── modules/
 │   └── logging.py
@@ -83,32 +83,43 @@ AWS_REGION = ' '
 
 **main.py**
 
-This script acts as the orchestrator for a data pipeline, moving BikePoint data to S3. Here is what it's doing:
-- Environment & Setup: It loads secure credentials (AWS keys) from a .env file and initialises two distinct logging sessions—one for `extract` and one for `load`—using the current timestamp.
-- Data Extraction: It triggers a process to fetch bike point data from the TfL API and passes the `extract_logger` to track the success or failure of that specific task.
-- Cloud Loading: It takes the locally saved data from a data folder and uploads it to a specified AWS S3 bucket, using the `load_logger` to record the transfer details.
+This script automates a standard ETL (Extract, Transform, Load) pipeline designed to move data from the Amplitude Analytics API into an AWS S3 bucket.
+Here is the breakdown of what it’s doing:
+- Environment Preparation & Authentication: It initialises a local file system (creating folders for logs and raw data), calculates a 24-hour time window for "yesterday's" data, and securely retrieves API and AWS credentials from a `.env` file.
+- Data Extraction & Processing: It calls the Amplitude API to download zipped data from the calculated timeframe (with a 3-attempt retry logic for reliability), then decompresses those files from `.zip` to `.gz` and finally into raw .json format, cleaning up the intermediate archives as it goes.
+- Cloud Storage Loading: It establishes a connection to Amazon S3 using `boto3`, uploads the processed JSON files to a specified bucket, logs the entire process for auditability, and deletes the local files once the transfer is complete.
 
 **logging.py**
 
-This script sets up a reusable logging system in Python. Here is the breakdown of what it’s doing:
-- Creates a Directory: It automatically generates a folder named after your prefix (if it doesn't already exist) to store your log files.
-- Initialises a File Logger: It creates a specific .log file named with your timestamp and configures it to record messages at the INFO level.
-- Prevents Duplication: It checks for existing "handlers" before adding new ones, ensuring your logs don't accidentally double-post the same message to the file.
+This function serves as the central nervous system for the pipeline’s observability, ensuring that every action taken by the other functions is recorded with context.
+Here is what it’s doing:
+- Dynamic Log Generation: It uses a provided timestamp to create a unique filename (e.g., logs_YYYY-MM-DD HH-MM-SS.log) within a dedicated directory, preventing older logs from being overwritten and making it easier to audit specific runs.
+- Standardised Formatting: It configures the global logging settings to include the exact time of the event, the severity level (INFO, WARNING, ERROR), and a descriptive message for every entry.
+- Centralised Logger Instance: It initialises and returns a "logger" object that can be passed to other functions (like the extract or unzip functions), allowing them to report their status to that single, timestamped file.
 
 **extract.py**
 
-This script handles the extraction and storage phase of your pipeline with built-in error handling. Here is what’s happening:
-- API Request with Retry Logic: It attempts to fetch data from the provided URL and is programmed to retry up to a specific number of times if it encounters server errors (status codes 500+) or connection issues.
-- JSON File Management: Upon a successful "200 OK" response, it ensures a `data` directory exists and saves the API results as a local .json file named after the current timestamp.
-- Success and Error Logging: It records the outcome of the attempt—logging a success message and a "😊" emoji to your log file if it works, or capturing the failure reason if the request hits a permanent error (like a 404).
-- It will try 3 times in total, waiting 10 seconds each go (`time.sleep(10)`).
+This function is the "Extract" phase of your pipeline, specifically handling the heavy lifting of pulling data from the Amplitude API.
+Here is what this specific function is doing:
+- Authenticated Data Retrieval: It sends an authorized GET request to the Amplitude API using Basic Auth (API/Secret keys) to fetch event data as a binary zip file.
+- Intelligent Retry Logic: It manages network instability by checking status codes; if it hits a server error (500 range), it waits 10 seconds and retries (up to a set limit), but it immediately kills the script for client-side errors (like a 401 Unauthorized) to avoid infinite loops.
+- File Persistence & Logging: Upon a successful 200 OK response, it writes the raw content to a local `.zip` file with a unique timestamp and simultaneously records every success or failure to a `.log` file for later troubleshooting.
+
+**uzip.py**
+
+This function handles the "Transform" stage of your pipeline, specifically dealing with the nested compression layers common in large data exports.
+Here is what this function is doing:
+- Two-Stage Decompression: It first unpacks a `.zip` archive to reveal a batch of compressed .gz files, and then it performantly streams those `.gz` files into a final readable format (JSON) using `shutil.copyfileobj`.
+- Recursive File Traversal: It uses `os.walk` to dig through any subdirectories created during the initial unzip, ensuring it finds and processes every single data file regardless of how the API structured the folder hierarchy.
+- Automatic Workspace Cleanup: To save disk space and keep the environment tidy, it immediately deletes the source `.zip` and intermediate `.gz` files the moment they have been successfully processed and moved to the next stage.
 
 **load.py**
 
-This script handles the loading and cleanup phase of your pipeline, moving local data to the cloud. Here is what it’s doing:
-- File Discovery & Validation: It scans the `data` directory for all files ending in .json; if it doesn't find any, it logs an error and stops the process to prevent unnecessary cloud connections.
-- S3 Cloud Upload: Using the `boto3` library, it establishes a connection to AWS and uploads each JSON file to your specified S3 bucket using the original filename.
-- Cleanup & Error Logging: After a successful upload, it deletes the local file (`unlink`) to save space; if an upload fails due to AWS permissions or network issues, it catches the error and logs it without crashing the entire loop.
+This final function is the "Load" phase of your pipeline, where the processed data is safely moved to permanent cloud storage.
+Here is what it is doing:
+- Targeted File Discovery: It scans your local directories specifically for files ending in `.json`, filtering out any stray logs or system files to ensure only actual data is sent to the cloud.
+- Secure Cloud Migration: It uses the boto3 client to stream each JSON file into your specified AWS S3 bucket, effectively moving your data from a temporary local environment to a secure, scalable production environment.
+- Success-Based Cleanup: It operates on a "delete-after-upload" logic—only removing the local file from your disk once the S3 upload is confirmed successful, which prevents data loss in case of a network failure.
 
 ## Logging 📝
 Each script execution creates a log file containing:
@@ -119,8 +130,8 @@ Each script execution creates a log file containing:
 
 Example log entry:
 ```
-2026-01-07 12:30:01 - INFO - Download successful at 2026-01-07 12-30-01 😊
-2026-01-07 12:35:15 - INFO - Uploaded and deleted: 2026-01-07 12-30-01.json
+2026-01-27 13:38:03,186 - INFO - Uploading json_data\100011471_2026-01-26_11#0.json
+2026-01-27 13:38:03,263 - INFO - Upload successful
 ```
 
 ## Configuring AWS 🟧 and Snowflake ❄️
