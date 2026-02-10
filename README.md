@@ -105,7 +105,7 @@ Here is what this specific function is doing:
 - Intelligent Retry Logic: It manages network instability by checking status codes; if it hits a server error (500 range), it waits 10 seconds and retries (up to a set limit), but it immediately kills the script for client-side errors (like a 401 Unauthorized) to avoid infinite loops.
 - File Persistence & Logging: Upon a successful 200 OK response, it writes the raw content to a local `.zip` file with a unique timestamp and simultaneously records every success or failure to a `.log` file for later troubleshooting.
 
-**uzip.py**
+**unzip.py**
 
 This function handles the "Transform" stage of your pipeline, specifically dealing with the nested compression layers common in large data exports.
 Here is what this function is doing:
