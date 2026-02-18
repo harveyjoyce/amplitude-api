@@ -1,0 +1,85 @@
+version: 2
+
+models:
+  - name: int_amplitude__many_click_sessions
+    description: 'Contains the Amplitude events data but filtered to page views and clicks only. Also filtered to sessions with more than 2 clicks/views of the same page. Row level is stll one row per event'
+    columns:
+      - name: cntd_event
+        data_type: number
+        description: '{{ doc("cntd_event") }}'
+
+      - name: instance_id
+        data_type: number
+        description: 'Primary key. {{ doc("instance_id") }}'
+
+      - name: amplitude_id
+        data_type: varchar
+        description: '{{ doc("amplitude_id") }}'
+
+      - name: user_id
+        data_type: varchar
+        description: 'Unique identifier for the user. Often null - only defined if the user logs in'
+
+      - name: device_id
+        data_type: varchar
+        description: 'The id of the device being used to access the site'
+
+      - name: ip_address
+        data_type: varchar
+        description: 'The ip address from which the site is being accessed'
+
+      - name: language
+        data_type: varchar
+        description: 'The language in which the user is viewing the site'
+
+      - name: city
+        data_type: varchar
+        description: 'The city from which the site is being viewed'
+
+      - name: region
+        data_type: varchar
+        description: 'The region from which the site is being viewed'
+
+      - name: country
+        data_type: varchar
+        description: 'The country from which the site is being viewed'
+
+      - name: event_id
+        data_type: number
+        description: 'Should be a unique id for each event within each session for each user. Sometimes duplicated'
+
+      - name: event_type
+        data_type: varchar
+        description: 'The action performed (e.g. element clicked, page viewed, etc.). This has been filtered to clicks and page views'
+
+      - name: event_time
+        data_type: timestamp_ntz
+        description: 'The time at which the action was performed'
+
+      - name: page_counter
+        data_type: number
+        description: 'The number of pages viewed in the session'
+
+      - name: page_location
+        data_type: varchar
+        description: 'The url of the page on the site being viewed'
+
+      - name: email_from_url
+        data_type: varchar
+        description: 'The email address parsed from the url (embedded if the user reached the site via a marketing link)'
+
+      - name: page_domain
+        data_type: varchar
+        description: 'The domain of the site. Can indicate the sites for each TIL country'
+
+      - name: page_title
+        data_type: varchar
+        description: 'The name of the page being viewed'
+
+      - name: session_id
+        data_type: number
+        description: 'Represents the number of milliseconds since epoch (UTC) of when the first event of the session occurs'
+
+      - name: email_domain
+        data_type: varchar
+        description: 'Combination of domain_from_email_from_url and domain_from_user_id, filling in nulls from each with values from the other'
