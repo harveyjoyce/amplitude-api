@@ -1,0 +1,56 @@
+version: 2
+
+models:
+  - name: amplitude__repeat_clicks
+    description: An aggregated and filtered version of the Amplitude events data. The row level is one row per user, session, and event type. It's been filtered to only include clicks and page views in sessions where that action was taken more than twice on the same page'
+    columns:
+      - name: pkey
+        data_type: number
+        description: '{{ doc("pkey") }}'
+        data_tests:
+          - unique
+          - not_null
+
+      - name: amplitude_id
+        data_type: varchar
+        description: '{{ doc("amplitude_id") }}'
+
+      - name: session_id
+        data_type: number
+        description: '{{ doc("session_id") }}'
+
+      - name: device_id
+        data_type: varchar
+        description: '{{ doc("device_id") }}'
+
+      - name: page_location
+        data_type: varchar
+        description: '{{ doc("page_location") }}'
+
+      - name: page_domain
+        data_type: varchar
+        description: '{{ doc("page_domain") }}'
+
+      - name: page_title
+        data_type: varchar
+        description: '{{ doc("page_title") }}'
+
+      - name: event_type
+        data_type: varchar
+        description: '{{ doc("event_type") }}'
+
+      - name: session_start_time
+        data_type: timestamp_ntz
+        description: '{{ doc("session_start_time") }}'
+
+      - name: session_end_time
+        data_type: timestamp_ntz
+        description: '{{ doc("session_end_time") }}'
+
+      - name: cntd_event
+        data_type: number
+        description: '{{ doc("cntd_event") }}'
+
+      - name: avg_sec_between_events
+        data_type: number
+        description: '{{ doc("avg_sec_between_events") }}'

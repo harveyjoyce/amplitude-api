@@ -1,0 +1,160 @@
+version: 2
+
+models:
+  - name: base_amplitude__events
+    description: 'A version of the Amplitude events data with its JSON fully parsed out and some useful columns added in'
+    columns:
+      - name: file_name
+        data_type: varchar
+        description: '{{ doc("file_name") }}'
+      
+      - name: amplitude_id
+        data_type: varchar
+        description: '{{ doc("amplitude_id") }}'
+
+      - name: user_id
+        data_type: varchar
+        description: '{{ doc("user_id") }}'
+
+      - name: device_id
+        data_type: varchar
+        description: '{{ doc("device_id") }}'
+
+      - name: ip_address
+        data_type: varchar
+        description: '{{ doc("ip_address") }}'
+
+      - name: language
+        data_type: varchar
+        description: '{{ doc("language") }}'
+
+      - name: city
+        data_type: varchar
+        description: '{{ doc("city") }}'
+
+      - name: region
+        data_type: varchar
+        description: '{{ doc("region") }}'
+
+      - name: country
+        data_type: varchar
+        description: '{{ doc("country") }}'
+
+      - name: event_id
+        data_type: number
+        description: '{{ doc("event_id") }}'
+
+      - name: event_type
+        data_type: varchar
+        description: '{{ doc("event_type") }}'
+
+      - name: event_time
+        data_type: timestamp_ntz
+        description: '{{ doc("event_time") }}'
+
+      - name: page_counter
+        data_type: number
+        description: '{{ doc("page_counter") }}'
+
+      - name: page_location
+        data_type: varchar
+        description: '{{ doc("page_location") }}'
+
+      - name: page_domain
+        data_type: varchar
+        description: '{{ doc("page_domain") }}'
+
+      - name: page_title
+        data_type: varchar
+        description: '{{ doc("page_title") }}'
+
+      - name: session_id
+        data_type: number
+        description: '{{ doc("session_id") }}'
+
+
+  - name: stg_amplitude__events
+    description: A version of the Amplitude events data based on base_amplitude__events but with duplicates removed and a primary key added in'
+    columns:
+      - name: instance_id
+        data_type: number
+        description: '{{ doc("instance_id") }}'
+        data_tests:
+          - unique
+          - not_null
+
+      - name: amplitude_id
+        data_type: varchar
+        description: '{{ doc("amplitude_id") }}'
+
+      - name: user_id
+        data_type: varchar
+        description: '{{ doc("user_id") }}'
+
+      - name: domain_from_user_id
+        data_type: varchar
+        description: '{{ doc("domain_from_user_id") }}'
+
+      - name: device_id
+        data_type: varchar
+        description: '{{ doc("device_id") }}'
+
+      - name: ip_address
+        data_type: varchar
+        description: '{{ doc("ip_address") }}'
+
+      - name: language
+        data_type: varchar
+        description: '{{ doc("language") }}'
+
+      - name: city
+        data_type: varchar
+        description: '{{ doc("city") }}'
+
+      - name: region
+        data_type: varchar
+        description: '{{ doc("region") }}'
+
+      - name: country
+        data_type: varchar
+        description: '{{ doc("country") }}'
+
+      - name: event_id
+        data_type: number
+        description: '{{ doc("event_id") }}'
+
+      - name: event_type
+        data_type: varchar
+        description: '{{ doc("event_type") }}'
+
+      - name: event_time
+        data_type: timestamp_ntz
+        description: '{{ doc("event_time") }}'
+
+      - name: page_counter
+        data_type: number
+        description: '{{ doc("page_counter") }}'
+
+      - name: page_location
+        data_type: varchar
+        description: '{{ doc("page_location") }}'
+
+      - name: email_from_url
+        data_type: varchar
+        description: '{{ doc("email_from_url") }}'
+
+      - name: page_domain
+        data_type: varchar
+        description: '{{ doc("page_domain") }}'
+
+      - name: page_title
+        data_type: varchar
+        description: '{{ doc("page_title") }}'
+
+      - name: session_id
+        data_type: number
+        description: '{{ doc("session_id") }}'
+
+      - name: email_domain
+        data_type: varchar
+        description: '{{ doc("email_domain") }}'

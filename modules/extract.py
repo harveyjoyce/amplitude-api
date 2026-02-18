@@ -1,13 +1,13 @@
 import requests
 import time
 
-def extract_function(max_attempts, url, params, API_KEY, SECRET_KEY, logger, data_dir, current_timestamp_str):
+def extract_function(max_attempts, url, params, AMP_API_KEY, AMP_SECRET_KEY, logger, data_dir, current_timestamp_str):
     '''
     Extracts data from Amplitude, writing it to a zip file, handling errors, and logging the outcome
     '''
     count = 0
     while count < max_attempts:
-        response = requests.get(url, params=params, auth=(API_KEY, SECRET_KEY))
+        response = requests.get(url, params=params, auth=(AMP_API_KEY, AMP_SECRET_KEY))
 
         #check for successful download
         if response.status_code == 200:

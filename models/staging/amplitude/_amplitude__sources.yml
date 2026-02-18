@@ -1,0 +1,17 @@
+version: 2
+
+sources:
+  - name: amplitude
+    description: 'Raw data from the Amplitude export API containing events from the TIL website. Documentation: https://amplitude.com/docs/apis/analytics/export'
+    database: til_data_engineering
+    schema: dbostrom_staging
+    tables:
+      - name: amplitude_events_raw
+        description: 'The data from the Amplitude export API. Still not completely parsed out'
+        columns:
+          - name: json_data
+            data_type: variant
+            description: 'The unparsed events data'
+          - name: file_name
+            data_type: varchar
+            description: 'The name of the file in S3 that was ingested into Snowflake. Contains the timestamp for the extract time'
